@@ -1,4 +1,4 @@
-pragma solidity 0.5.16;
+pragma solidity ^0.8.5;
 
 contract Validator {
     // Keeping the count of the people so that we know how many persons are registered.
@@ -22,8 +22,9 @@ contract Validator {
     }
 
     // Person mapping, to access an specific person.
-    mapping(uint => Person) public people;
-    mapping(uint => PersonDetails) public peopleDetails;
+    mapping(address => Person) public people;
+    mapping(address => PersonDetails) public peopleDetails;
+    mapping(uint => address) public peopleAddress;
 
 
     // Creator Person.
@@ -33,17 +34,17 @@ contract Validator {
         string memory _email
     ) public {
         peopleCount = peopleCount + 1;
-        people[peopleCount] = Person(
+        peopleAddress[peopleCount] = msg.sender;
+        people[msg.sender] = Person(
             peopleCount,
             _firstName,
             _lastName,
             _email
         );
     }
-    
+
     // Add details 
     function addDetails (
-        uint _id,
         string memory _income,
         uint _dob,
         string memory _medicalCondition,
@@ -51,7 +52,7 @@ contract Validator {
         string memory _educationQualification,
         string memory _nativeCountry
     ) public {
-        peopleDetails[_id] = PersonDetails(
+        peopleDetails[msg.sender] = PersonDetails(
             _income,
             _dob,
             _medicalCondition,
