@@ -1,76 +1,67 @@
 import { useState } from 'react';
 import { createContext, useContext } from "react";
+import { Drizzle, DrizzleState, Person, PersonData, PersonDetails, PhysicalStatus } from '../types';
 
-export interface PersonDetails {
-		lastName: string;
-		email: string;
-		income: number;
-		dob: Date;
-		medicalCondition: string;
-		phoneNumber: string;
-		educationQualification: string;
-		nativeCountry: string;
-		firstName: string;
-}
+
 
 interface IGlobalState {
-	formValues1?: {
-		firstName: string;
-		lastName: string;
-		email: string;
-	};
-	formValues2?: {
-		income: number;
-		dob: Date;
-		medicalCondition: string;
-		phoneNumber: string;
-		educationQualification: string;
-		nativeCountry: string;
-	}
-	details?: PersonDetails
+	person?: Person;
+	personDetails?: PersonDetails;
+	allData?: PersonData;
+	isAdmin?: boolean;
 }
 
 interface IGlobalContext extends IGlobalState {
-	addFormStep1: (firstName: string, lastName: string, email: string) => void;	
-	addFormStep2: (income: number, dob: Date, medicationCondition: string, phoneNumber: string, educationQualification: string, nativeCountry: string) => void;	
-	drizzle: {}
-	drizzleState: {}
-	startRegistration: (drizzle: any) => Promise<any>
-	updateDetails: (d: PersonDetails) => void
+	addPerson: (firstName: string, lastName: string, email: string) => void;	
+	addPersonDetails: (income: number, dob: Date, medicationCondition: PhysicalStatus, phoneNumber: string, educationQualification: string, pinCode: number, nativeCountry: string) => void;	
+	drizzle?: Drizzle;
+	drizzleState?: DrizzleState;
+	startRegistration: (drizzle: Drizzle, person: Person, personDetails: PersonDetails) => Promise<any>
+	updatePerson: (d: Person) => void;
+	updateDetails: (d: PersonDetails) => void;
+	isAdmin?: boolean;
+	makeAdmin: () => void;
 }
 
 const Context = createContext<IGlobalContext>({
-	addFormStep1: () => {},
-	addFormStep2: () => {},
-	drizzle: {},
-	drizzleState: {},
+	addPerson: () => {},
+	addPersonDetails: () => {},
 	startRegistration: async (drizzle: any) => {},
-	updateDetails: () => {}
+	updateDetails: () => {},
+	updatePerson: () => {},
+	makeAdmin: () => {},
+	isAdmin: false
 })
 
 export const Provider = ({children, drizzle, drizzleState}) => {
 	const [state, setState] = useState<IGlobalState>({});
 	
-	const addFormStep1 = (firstName: string, lastName: string, email: string) => {
-		setState({formValues1: {firstName, lastName, email}})
+	const addPerson = (firstName: string, lastName: string, email: string) => {
+		setState({person: {firstName, lastName, email}})
 	}
 
-	const addFormStep2 = (income: number, dob: Date, medicalCondition: string, phoneNumber: string, educationQualification: string, nativeCountry: string) => {
-		setState({formValues2: {income, dob, medicalCondition, educationQualification, nativeCountry, phoneNumber}})
+	const addPersonDetails = (income: number, dob: Date, medicalCondition: PhysicalStatus, phoneNumber: string, educationQualification: string, pinCode: number, nativeCountry: string,) => {
+		setState((prev) => ({...prev, personDetails: {income, dob, medicalCondition, educationQualification, nativeCountry, phoneNumber, pinCode}}))
 	}
 
-	const startRegistration = async (drizzle: any) => {
-		const {dob, educationQualification, income, medicalCondition, nativeCountry, phoneNumber} = state.formValues2;
-		await drizzle.contracts.Validator.methods.createPerson(state.formValues1.firstName, state.formValues1.lastName, state.formValues1.email).send();
-		await drizzle.contracts.Validator.methods.createPerson(state).send(income, dob, medicalCondition, phoneNumber, educationQualification, nativeCountry);
+	const startRegistration = async (drizzle: Drizzle, person: Person, personDetails: PersonDetails) => {
+		const {dob, educationQualification, income, medicalCondition, nativeCountry, phoneNumber, pinCode} = personDetails;
+		await drizzle.contracts.Validator.methods.createPerson(person.firstName, person.lastName, person.email).send();
+		await drizzle.contracts.Validator.methods.addDetails(income.toString(), dob.getTime(), medicalCondition, phoneNumber,pinCode, educationQualification, nativeCountry).send();
 		return 'Done';
 	}
 
-	const updateDetails = (details: PersonDetails) => {
-		setState((prev) => ({...prev, details}));
+	const updatePerson = (person: Person) => {
+		setState((prev) => ({...prev, person: { ...prev.person, ...person}}));
 	}
 
-	return <Context.Provider value={{...state, startRegistration, updateDetails, addFormStep1, addFormStep2, drizzle, drizzleState}}>{children}</Context.Provider>
+	const updateDetails = (personDetails: PersonDetails) => {
+		setState((prev) => ({...prev, personDetails: { ...prev.personDetails, ...personDetails}}));
+	}
+
+	const makeAdmin = () => setState(prev => ({...prev, isAdmin: true}));
+
+	return <Context.Provider value={{...state, startRegistration, updatePerson, updateDetails, addPerson, addPersonDetails, drizzle, drizzleState, makeAdmin}}>{children}</Context.Provider>
 } 
 
 

@@ -12,6 +12,7 @@ import Head from 'next/head'
 import { useForm } from "react-hook-form";
 import { useGlobalState } from '../../state';
 import { useRouter } from 'next/router';
+import { Person } from '../../types';
 
 interface Form1Inputs {
   firstName: string;
@@ -20,11 +21,11 @@ interface Form1Inputs {
 }
 
 export default function RegisterPage1() {
-  const {addFormStep1, formValues} = useGlobalState();
-  const { register, handleSubmit, formState: { errors } } = useForm<Form1Inputs>({defaultValues: formValues});
+  const {addPerson, person} = useGlobalState();
+  const { register, handleSubmit, formState: { errors } } = useForm<Person>({defaultValues: person});
   const router = useRouter();
   const onSubmit = (data: Form1Inputs) => {
-    addFormStep1(data.firstName, data.lastName, data.email);
+    addPerson(data.firstName, data.lastName, data.email);
     router.push('/register/2');
   }
   return (

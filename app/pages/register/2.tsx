@@ -12,24 +12,26 @@ import Head from 'next/head'
 import { useForm } from "react-hook-form";
 import { useGlobalState } from '../../state';
 import { useRouter } from 'next/router';
-
-interface Form2Inputs {
-  income: number;
-  dob: Date;
-  medicalCondition: string;
-  phoneNumber: string;
-  educationQualification: string;
-  nativeCountry: string;
-}
+import { PersonDetails } from '../../types';
 
 export default function RegisterPage1() {
-  const { register, handleSubmit, formState: { errors } } = useForm<Form2Inputs>();
-  const {addFormStep2, startRegistration, drizzle} = useGlobalState();
+  const { register, handleSubmit, formState: { errors } } = useForm<PersonDetails>();
+  const [shouldRegister, setShouldRegister] = React.useState(false);
+  const {addPersonDetails, startRegistration, drizzle, person, personDetails} = useGlobalState();
   const router = useRouter();
-  const onSubmit = (data: Form2Inputs) => {
-    addFormStep2(data.income, new Date(data.dob), data.medicalCondition, data.phoneNumber, data.educationQualification, data.nativeCountry);
-    startRegistration(drizzle).then((data) => {console.log(data); router.push('/')});
+  const onSubmit = (data: PersonDetails) => {
+    addPersonDetails(data.income, new Date(data.dob), data.medicalCondition, data.phoneNumber, data.educationQualification, data.pinCode, data.nativeCountry);
+    setShouldRegister(true);
   }
+
+  console.log(personDetails, shouldRegister, person)
+  
+  React.useEffect(() => {
+    if (personDetails?.dob && shouldRegister) {
+      console.log()
+      startRegistration(drizzle, person, personDetails).then((data) => {console.log(data); router.push('/')});
+    }
+  }, [personDetails?.dob, shouldRegister])
 
   const goBack = () => {
     router.back()
@@ -69,8 +71,13 @@ export default function RegisterPage1() {
           <Input type="text" {...register('educationQualification', { required: true })} />
           <FormErrorMessage>{errors.educationQualification}</FormErrorMessage>
         </FormControl>
+        <FormControl mt={5} id="pinCode" isRequired>
+          <FormLabel>PinCode:</FormLabel>
+          <Input type="number" {...register('pinCode', { required: true })} />
+          <FormErrorMessage>{errors.pinCode}</FormErrorMessage>
+        </FormControl>
         <FormControl mt={5} id="nativeCountry" isRequired>
-          <FormLabel>Country:</FormLabel>
+          <FormLabel>CitizenShip:</FormLabel>
           <Input type="text" {...register('nativeCountry', { required: true })} />
           <FormErrorMessage>{errors.nativeCountry}</FormErrorMessage>
         </FormControl>

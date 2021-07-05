@@ -9,6 +9,8 @@ const options = {
   contracts: [ValidatorContract],
 };
 
+// Don't know much about options types.
+// @ts-expect-error
 const drizzle = new Drizzle(options);
 
 function MyApp({ Component, pageProps }) {

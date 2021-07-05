@@ -2,19 +2,29 @@ import { Container, Heading } from '@chakra-ui/layout'
 import { Button } from '@chakra-ui/react'
 import Head from 'next/head'
 import Link from 'next/link'
+import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import { useGlobalState } from '../state'
+import { PersonData } from '../types'
 import Details from './../components/Details'
 
 export default function Home() {
-  const {drizzle,drizzleState, updateDetails} = useGlobalState() 
-  const [data, setData] = useState<any>({})
+  const {drizzle,drizzleState, updateDetails, updatePerson, makeAdmin} = useGlobalState() 
+  const [data, setData] = useState<Partial<PersonData>>({})
+  const router = useRouter();
 
   const fetchData = async () => {
     const address = drizzleState.accounts[0]
-    const data  = await drizzle.contracts.Validator.methods.people(address).call()
-    updateDetails(data)
-    setData(data)
+    const person  = await drizzle.contracts.Validator.methods.people(address).call()
+    const personDetails  = await drizzle.contracts.Validator.methods.peopleDetails(address).call()
+    const isAdmin  = await drizzle.contracts.Validator.methods.isAdmin().call()
+    if (isAdmin) {
+      makeAdmin();
+      router.push('/admin');
+    } 
+    updatePerson(person)
+    updateDetails(personDetails)
+    setData({...person, ...personDetails});
   }
 
   console.log(data)
@@ -22,6 +32,7 @@ export default function Home() {
   useEffect(() => {
     fetchData()
   }, [])
+
   return (
     <div>
       <Head>
@@ -32,7 +43,7 @@ export default function Home() {
       <Container>
         <main>
           <Heading>Crypto Validator</Heading>
-          {data.email ? <Details /> : 
+          {data?.email ? <Details /> : 
           <Link href="/register">
             <Button width="100%" py={4} my={10} colorScheme="blue">
             Register
