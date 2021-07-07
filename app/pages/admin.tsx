@@ -1,4 +1,4 @@
-import { Box, Heading, VStack, Text, Button, useToast } from '@chakra-ui/react';
+import { Box, Heading, VStack, Text, Button, useToast, Checkbox } from '@chakra-ui/react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import React, { useState } from 'react'
@@ -8,7 +8,7 @@ import format from 'date-fns/format'
 
 
 function AdminPage() {
-	const [people, setPeople] = useState<(PersonData&{address: string}) []>([]);
+	const [people, setPeople] = useState<(PersonData&{address: string, incentiveAmount: number}) []>([]);
 	const [peopleCount, setPeopleCount] = useState<number | null>(null);
 	const {drizzle, isAdmin} = useGlobalState();
 	const router = useRouter();
@@ -24,9 +24,12 @@ function AdminPage() {
 		const addresses = await Promise.all(promisedAddresses)
 		const promisedPeople = addresses.map(address => drizzle.contracts.Validator.methods.people(address).call());
 		const promisedDetails = addresses.map(address => drizzle.contracts.Validator.methods.peopleDetails(address).call());
+		const promisedIncentiveAmount =  addresses.map(address => drizzle.contracts.Validator.methods.approveBenefits(address).call());
 		const people = await Promise.all(promisedPeople);
 		const details = await Promise.all(promisedDetails);
-		const data = people.map((people, i) => ({...people, ...details[i], address: addresses[i]}))
+		const incentivesAmount = await Promise.all(promisedIncentiveAmount);
+		console.log(incentivesAmount)
+		const data = people.map((people, i) => ({...people, ...details[i], address: addresses[i], incentiveAmount: incentivesAmount[i]}))
 		setPeople(data);
 	}
 
@@ -67,7 +70,9 @@ function AdminPage() {
 							<Text>Education - {data.educationQualification}</Text>	
 							<Text>Income - {data.income}</Text>	
 							<Text>Date of Birth - {data.dob}</Text>
-							<Button onClick={() => verifyPerson(data.address)} colorScheme="blue">Verify</Button>
+							<Text fontWeight="bold">Incentive Details: {data.incentiveAmount}</Text>
+							<Checkbox isChecked={data.verified}>Verified</Checkbox>
+							<Button width="100%" mt={2} disabled={data.verified} onClick={() => verifyPerson(data.address)} colorScheme="blue">{data.verified ? 'Already Verified': 'Verify'}</Button>
 						</Box>
 					)
 				}

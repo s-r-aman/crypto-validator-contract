@@ -36,6 +36,7 @@ export type Drizzle = {
 				createPerson: (firstName: string, lastName: string, email: string) => {send: () => Promise<null>} 
 				addDetails: (income: string, dob: number, medicalCondition: 0 | 1 | 2, phoneNumber: string, pinCode: number, educationQualification: string, nativeCountry: string) => {send: () => Promise<null>} 
 				verifyPerson: (address: string) => {send: () => Promise<null>} 
+				approveBenefits: (beneficiaryAddress: string) => {call: () => Promise<number>} 
 			}
 		}
 	}

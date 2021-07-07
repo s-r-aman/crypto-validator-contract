@@ -21,7 +21,7 @@ contract Validator {
     }
 
     struct PersonDetails {
-        string income; // in cents
+        uint income; // in cents
         uint dob; // Date of birth, in integer UNIX time
         PhysicalStatus medicalCondition; // Medical condition if any 
         string phoneNumber; // Phone number 
@@ -44,6 +44,13 @@ contract Validator {
     // Cities mapping from pinCodes.
     mapping(uint => CityExpense) public pinCodes;
 
+    constructor () public{
+        // Adding cities
+        pinCodes[560001] = CityExpense("Banglore", 560001, 10000);
+        pinCodes[570004] = CityExpense("Mysore", 570004, 9000);
+        pinCodes[571441] = CityExpense("Chandagalu", 571441, 5000);
+    }
+
 
     // Creator Person.
     function createPerson (
@@ -65,7 +72,7 @@ contract Validator {
 
     // Add details 
     function addDetails (
-        string memory _income,
+        uint _income,
         uint _dob,
         PhysicalStatus _medicalCondition,
         string memory _phoneNumber,
@@ -99,7 +106,7 @@ contract Validator {
     
     // Update details 
     function updateDetails (
-        string memory _income,
+        uint _income,
         uint _dob,
         PhysicalStatus _medicalCondition,
         string memory _phoneNumber,
@@ -132,9 +139,9 @@ contract Validator {
         // 1. Find a location of the person and get the average living expenses
         // 2. Find the physical status, if normal return
         // 3. Find the different in their income and 
-        if  (people[beneficiaryAddress].verified == false) {
-            return 0;
-        }
+        // if  (people[beneficiaryAddress].verified == false) {
+        //     return 0;
+        // }
 
         if (peopleDetails[beneficiaryAddress].medicalCondition == PhysicalStatus.NORMAL) {
             return 0;
@@ -143,7 +150,7 @@ contract Validator {
         uint pinCode = peopleDetails[beneficiaryAddress].pinCode;
         uint averageExpense = pinCodes[pinCode].averageExpense;
         
-        uint differentInExpense = peopleDetails[beneficiaryAddress].pinCode - averageExpense;
+        uint differentInExpense = averageExpense - peopleDetails[beneficiaryAddress].income;
         return differentInExpense;
     }
 
