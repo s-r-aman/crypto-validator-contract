@@ -1,6 +1,6 @@
 import { Container, Heading } from '@chakra-ui/layout'
 import { Button } from '@chakra-ui/react'
-import Head from 'next/head'
+import Head from 'next/head' 
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
@@ -17,17 +17,18 @@ export default function Home() {
     const address = drizzleState.accounts[0]
     const person  = await drizzle.contracts.Validator.methods.people(address).call()
     const personDetails  = await drizzle.contracts.Validator.methods.peopleDetails(address).call()
+    const isEligible  = await drizzle.contracts.Validator.methods.isEligible(address).call()
+    console.log(person, personDetails)
     const isAdmin  = await drizzle.contracts.Validator.methods.isAdmin().call()
     if (isAdmin) {
       makeAdmin();
       router.push('/admin');
     } 
-    updatePerson(person)
+    updatePerson({...person, isEligible: !!isEligible})
     updateDetails(personDetails)
-    setData({...person, ...personDetails});
+    setData({...person, ...personDetails, isEligible: !!isEligible});
   }
 
-  console.log(data)
 
   useEffect(() => {
     fetchData()

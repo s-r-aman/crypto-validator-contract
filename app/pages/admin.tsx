@@ -1,4 +1,4 @@
-import { Box, Heading, VStack, Text, Button, useToast, Checkbox } from '@chakra-ui/react';
+import { Box, Heading, VStack, Text, Button, useToast, Checkbox, HStack } from '@chakra-ui/react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import React, { useState } from 'react'
@@ -6,17 +6,19 @@ import { useGlobalState } from '../state';
 import { PersonData } from '../types';
 import format from 'date-fns/format'
 
-
 function AdminPage() {
 	const [people, setPeople] = useState<(PersonData&{address: string, incentiveAmount: number}) []>([]);
 	const [peopleCount, setPeopleCount] = useState<number | null>(null);
+	const [bankBalance, setBankBalance] = useState<number | null>(null);
 	const {drizzle, isAdmin} = useGlobalState();
 	const router = useRouter();
 	const toast = useToast()
 
 	const fetchData = async () => {
 		const peopleCount = await drizzle.contracts.Validator.methods.peopleCount().call()
+		const bankBalance = await drizzle.contracts.Validator.methods.bankBalance().call()
 		setPeopleCount(peopleCount)
+		setBankBalance(bankBalance)
 		let promisedAddresses = []
 		for (let i = 0; i < peopleCount; i++) {
 			promisedAddresses.push(drizzle.contracts.Validator.methods.peopleAddress(peopleCount).call());
@@ -24,17 +26,22 @@ function AdminPage() {
 		const addresses = await Promise.all(promisedAddresses)
 		const promisedPeople = addresses.map(address => drizzle.contracts.Validator.methods.people(address).call());
 		const promisedDetails = addresses.map(address => drizzle.contracts.Validator.methods.peopleDetails(address).call());
-		const promisedIncentiveAmount =  addresses.map(address => drizzle.contracts.Validator.methods.approveBenefits(address).call());
+		const promisedIncentiveAmount =  addresses.map(address => drizzle.contracts.Validator.methods.isEligible(address).call());
 		const people = await Promise.all(promisedPeople);
 		const details = await Promise.all(promisedDetails);
 		const incentivesAmount = await Promise.all(promisedIncentiveAmount);
-		console.log(incentivesAmount)
-		const data = people.map((people, i) => ({...people, ...details[i], address: addresses[i], incentiveAmount: incentivesAmount[i]}))
+		const data = people.map((people, i) => ({...people, ...details[i], address: addresses[i], incentiveAmount: incentivesAmount[i] }))
 		setPeople(data);
 	}
 
 	const verifyPerson = async (address: string) => {
 		await drizzle.contracts.Validator.methods.verifyPerson(address).send();
+		setPeople(prev => prev.map((data) => {
+			if (data.address === address) {
+				return {...data, verified: true}
+			}
+			return data
+		}))
 		toast({
 			title: "Person Verified",
 			description: "We have verified the person.",
@@ -43,7 +50,37 @@ function AdminPage() {
 			isClosable: true,
 		})
 	}
+
+
+	const unVerifyPerson = async (address: string) => {
+		await drizzle.contracts.Validator.methods.unVerifyPerson(address).send();
+		setPeople(prev => prev.map((data) => {
+			if (data.address === address) {
+				return {...data, verified: false}
+			}
+			return data
+		}))
+		toast({
+			title: "Person unverified",
+			description: "We have unverified the person.",
+			status: "warning",
+			duration: 9000,
+			isClosable: true,
+		})
+	}
 	
+	const transferBenefits = async (address: string) => {
+		await drizzle.contracts.Validator.methods.transferBenefits(address).send();
+		toast({
+			title: "Incentive Transferred",
+			description: "We have transferred the incentive money to the person.",
+			status: "success",
+			duration: 3000,
+			isClosable: true,
+		})
+		await fetchData()
+	}
+
 	React.useEffect(() => {
 		if (!isAdmin) {
       router.push('/');
@@ -60,20 +97,31 @@ function AdminPage() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 		<Box maxW="1400px" w="90%" m="0 auto">
-			<Heading>Dashboard: Total Entries - {peopleCount}</Heading>
+			<Heading>Dashboard: Total Entries - {peopleCount}. Bank account balance - {bankBalance}</Heading>
 			<VStack spacing={4} mt={8}>
 				{
-					people.map((data) => 
-						<Box w="100%" bg="gray.100" p={4} borderRadius="sm" key={data.firstName}>
-							<Heading size="sm">{data.firstName} {data.lastName}</Heading>
+					people.map((data) =>  {
+						let dob = data.dob;
+						if (typeof dob === 'string') {
+							dob = parseInt(dob);
+						}
+					return (
+					<VStack w="90%" maxW="700px" bg="gray.100" alignItems='left' p={4} borderRadius="sm" key={data.firstName}>
+							<Heading size="sm">Name: {data.firstName} {data.lastName}</Heading>
 							<Text>Email - {data.email}</Text>
 							<Text>Education - {data.educationQualification}</Text>	
 							<Text>Income - {data.income}</Text>	
-							<Text>Date of Birth - {data.dob}</Text>
-							<Text fontWeight="bold">Incentive Details: {data.incentiveAmount}</Text>
+							<Text>Date of Birth - {format(dob, 'MMM dd,YYY')}</Text>
+							<Text fontWeight="bold">{data.incentiveAmount && <>
+								<Checkbox isChecked={!!data.incentiveAmount}>Eligible for incentive: ₹ {data.incentiveAmount}</Checkbox>
+						</>}</Text>
 							<Checkbox isChecked={data.verified}>Verified</Checkbox>
-							<Button width="100%" mt={2} disabled={data.verified} onClick={() => verifyPerson(data.address)} colorScheme="blue">{data.verified ? 'Already Verified': 'Verify'}</Button>
-						</Box>
+							<Checkbox isChecked={data.benefitsTransferred}>Benefits Transferred</Checkbox>
+							<HStack>
+							<Button width="100%" onClick={() => data.verified ? unVerifyPerson(data.address) : verifyPerson(data.address)} colorScheme="blue">{data.verified ? 'Unverify': 'Verify'}</Button>
+							<Button width="100%" isDisabled={!data.verified||data.benefitsTransferred} onClick={() => transferBenefits(data.address)} colorScheme="blue">{data.verified ? !data.benefitsTransferred ? 'Transfer Benefits': 'Benefits transferred.' : 'Verify the person to transfer benefits.'}</Button>
+							</HStack>
+						</VStack>)}
 					)
 				}
 			</VStack>

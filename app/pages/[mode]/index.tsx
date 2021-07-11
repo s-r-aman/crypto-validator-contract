@@ -4,7 +4,7 @@ import { useRouter } from 'next/router'
 export default function RegisterPage() {
   const router = useRouter();
   useLayoutEffect(() => {
-    router.push('/register/1')
+    router.push(router.asPath + '/1')
   }, []);
   return null;   
 }

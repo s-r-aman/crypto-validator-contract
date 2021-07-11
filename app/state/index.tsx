@@ -17,6 +17,7 @@ interface IGlobalContext extends IGlobalState {
 	drizzle?: Drizzle;
 	drizzleState?: DrizzleState;
 	startRegistration: (drizzle: Drizzle, person: Person, personDetails: PersonDetails) => Promise<any>
+	updateRegistration: (drizzle: Drizzle, person: Person, personDetails: PersonDetails) => Promise<any>
 	updatePerson: (d: Person) => void;
 	updateDetails: (d: PersonDetails) => void;
 	isAdmin?: boolean;
@@ -27,6 +28,7 @@ const Context = createContext<IGlobalContext>({
 	addPerson: () => {},
 	addPersonDetails: () => {},
 	startRegistration: async (drizzle: any) => {},
+	updateRegistration: async (drizzle: any) => {},
 	updateDetails: () => {},
 	updatePerson: () => {},
 	makeAdmin: () => {},
@@ -37,7 +39,7 @@ export const Provider = ({children, drizzle, drizzleState}) => {
 	const [state, setState] = useState<IGlobalState>({});
 	
 	const addPerson = (firstName: string, lastName: string, email: string) => {
-		setState({person: {firstName, lastName, email}})
+		setState((prev) => ({...prev, person: {firstName, lastName, email}}))
 	}
 
 	const addPersonDetails = (income: number, dob: Date, medicalCondition: PhysicalStatus, phoneNumber: string, educationQualification: string, pinCode: number, nativeCountry: string,) => {
@@ -47,7 +49,16 @@ export const Provider = ({children, drizzle, drizzleState}) => {
 	const startRegistration = async (drizzle: Drizzle, person: Person, personDetails: PersonDetails) => {
 		const {dob, educationQualification, income, medicalCondition, nativeCountry, phoneNumber, pinCode} = personDetails;
 		await drizzle.contracts.Validator.methods.createPerson(person.firstName, person.lastName, person.email).send();
+		// @ts-expect-error
 		await drizzle.contracts.Validator.methods.addDetails(income.toString(), dob.getTime(), medicalCondition, phoneNumber,pinCode, educationQualification, nativeCountry).send();
+		return 'Done';
+	}
+
+	const updateRegistration = async (drizzle: Drizzle, person: Person, personDetails: PersonDetails) => {
+		const {dob, educationQualification, income, medicalCondition, nativeCountry, phoneNumber, pinCode} = personDetails;
+		await drizzle.contracts.Validator.methods.updatePerson(person.firstName, person.lastName, person.email).send();
+		console.log(personDetails.nativeCountry)
+		await drizzle.contracts.Validator.methods.updateDetails(income.toString(), dob.getTime(), medicalCondition, phoneNumber,pinCode, educationQualification, nativeCountry).send();
 		return 'Done';
 	}
 
@@ -60,8 +71,8 @@ export const Provider = ({children, drizzle, drizzleState}) => {
 	}
 
 	const makeAdmin = () => setState(prev => ({...prev, isAdmin: true}));
-
-	return <Context.Provider value={{...state, startRegistration, updatePerson, updateDetails, addPerson, addPersonDetails, drizzle, drizzleState, makeAdmin}}>{children}</Context.Provider>
+console.log(state)
+	return <Context.Provider value={{...state, startRegistration, updatePerson, updateDetails, addPerson, addPersonDetails, drizzle, drizzleState, makeAdmin, updateRegistration}}>{children}</Context.Provider>
 } 
 
 

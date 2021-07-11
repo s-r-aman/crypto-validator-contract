@@ -20,21 +20,25 @@ interface Form1Inputs {
   email: string;
 }
 
+
+
 export default function RegisterPage1() {
   const {addPerson, person} = useGlobalState();
-  const { register, handleSubmit, formState: { errors } } = useForm<Person>({defaultValues: person});
   const router = useRouter();
+  const { register, handleSubmit, formState: { errors } } = useForm<Person>({defaultValues: router.query.mode === 'update' ? person : undefined });
+  console.log(router)
   const onSubmit = (data: Form1Inputs) => {
     addPerson(data.firstName, data.lastName, data.email);
-    router.push('/register/2');
+    router.push('/' + router.query.mode + '/2');
   }
+  console.log(router.query.mode)
   return (
     <>
       <Head>
-        <title>Register | Crypto Validator</title>
+        <title>{(router.query.mode === 'register' && 'Register')  || (router.query.mode === 'update' && "Update")} | Crypto Validator</title>
       </Head>
       <Container mt={5}>
-        <Heading>Register</Heading>
+        <Heading>{(router.query.mode === 'register' && 'Register')  || (router.query.mode === 'update' && "Update")}</Heading>
         <Heading size="sm" mt={5}>Step 1</Heading>
         <Box as="form" onSubmit={handleSubmit(onSubmit)}>
         <FormControl mt={5} id="firstName" isRequired>

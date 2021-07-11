@@ -7,6 +7,9 @@ contract Validator {
     // Keeping the count of the people so that we know how many persons are registered.
     uint public peopleCount = 0;
 
+    // Govt bank balance;
+    uint public bankBalance = 10000000;
+
     // Array of whitelisted addresses.
     address[] whiteListedAddresses = [0x24475E90aF9E19C7c430e8fC7dF60911b44e031F, 0x8cFf7D9C34448e5963d74c9fD8825C9ca0b41Ec7];
 
@@ -17,7 +20,7 @@ contract Validator {
         string lastName; // Last Name of the person.
         string email; // Email of the person.
         bool verified; // Verified 
-        bool benefitsGiven; // Verified 
+        bool benefitsTransferred; // Verified
     }
 
     struct PersonDetails {
@@ -110,14 +113,15 @@ contract Validator {
         uint _dob,
         PhysicalStatus _medicalCondition,
         string memory _phoneNumber,
+        uint _pinCode,
         string memory _educationQualification,
         string memory _nativeCountry
     ) public {
-        people[msg.sender].verified = false;
         peopleDetails[msg.sender].income = _income;
         peopleDetails[msg.sender].dob = _dob;
         peopleDetails[msg.sender].medicalCondition = _medicalCondition;
         peopleDetails[msg.sender].phoneNumber = _phoneNumber;
+        peopleDetails[msg.sender].pinCode = _pinCode;
         peopleDetails[msg.sender].educationQualification = _educationQualification;
         peopleDetails[msg.sender].nativeCountry = _nativeCountry;
     }
@@ -133,7 +137,19 @@ contract Validator {
         }
     }
 
-    function approveBenefits (
+
+    // Un Verify Person.
+    function unVerifyPerson (
+        address _personAddress
+    ) public {
+        for (uint i = 0; i < whiteListedAddresses.length; i++) {
+            if (msg.sender == whiteListedAddresses[i]) {
+                people[_personAddress].verified = false;
+            }
+        }
+    }
+
+    function isEligible (
         address beneficiaryAddress
     ) public returns(uint) {
         // 1. Find a location of the person and get the average living expenses
@@ -152,6 +168,18 @@ contract Validator {
         
         uint differentInExpense = averageExpense - peopleDetails[beneficiaryAddress].income;
         return differentInExpense;
+    }
+
+    function transferBenefits (address beneficiaryAddress) public {
+        uint benefitsToBeTransferred = isEligible(beneficiaryAddress);
+        if  (people[beneficiaryAddress].verified == true && benefitsToBeTransferred > 0) {
+            for (uint i = 0; i < whiteListedAddresses.length; i++) {
+                if (msg.sender == whiteListedAddresses[i]) {
+                    bankBalance = bankBalance - benefitsToBeTransferred;
+                    people[beneficiaryAddress].benefitsTransferred = true;
+                }
+            } 
+        }
     }
 
     function isAdmin () public returns(bool) {
