@@ -1,10 +1,17 @@
-import { Box, Heading, VStack, Text, Button, useToast, Checkbox, HStack } from '@chakra-ui/react';
+import { Box, Heading, VStack, Text, Button, useToast, Checkbox, HStack, Accordion, AccordionItem, AccordionButton, AccordionIcon, AccordionPanel } from '@chakra-ui/react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import React, { useState } from 'react'
 import { useGlobalState } from '../state';
-import { PersonData } from '../types';
+import { PersonData, PhysicalStatus } from '../types';
 import format from 'date-fns/format'
+import differenceInYears from 'date-fns/differenceInYears'
+
+const isSenior = (dob) => {
+	const d = new Date(parseInt(dob as unknown as string));
+	const difference = differenceInYears(Date.now(), d);
+	return difference > 65;
+}
 
 function AdminPage() {
 	const [people, setPeople] = useState<(PersonData&{address: string, incentiveAmount: number}) []>([]);
@@ -18,10 +25,11 @@ function AdminPage() {
 		const peopleCount = await drizzle.contracts.Validator.methods.peopleCount().call()
 		const bankBalance = await drizzle.contracts.Validator.methods.bankBalance().call()
 		setPeopleCount(peopleCount)
+		console.log(peopleCount)
 		setBankBalance(bankBalance)
 		let promisedAddresses = []
 		for (let i = 0; i < peopleCount; i++) {
-			promisedAddresses.push(drizzle.contracts.Validator.methods.peopleAddress(peopleCount).call());
+			promisedAddresses.push(drizzle.contracts.Validator.methods.peopleAddress(i+1).call());
 		}
 		const addresses = await Promise.all(promisedAddresses)
 		const promisedPeople = addresses.map(address => drizzle.contracts.Validator.methods.people(address).call());
@@ -89,6 +97,22 @@ function AdminPage() {
 		fetchData();
 	}, []);
 
+	const places = [
+		{ pinCode: 560001, name: 'Banglore', },
+		{pinCode: 570004, name: 'Mysore'}, {pinCode: 571441, name: 'Chandagalu'}]
+
+	const aggregatedData = places.map(({pinCode, name}) => {
+		const filteredByPinCode = people.filter(({pinCode: code}) => parseInt(code as unknown as string) === pinCode)
+		return {
+			pinCode,
+			filteredByPinCode,
+			name,
+			fullyChallenged: filteredByPinCode.filter(({pinCode: code, medicalCondition}) =>  medicalCondition === PhysicalStatus.COMPLETELY_PHYSICALLY_CHALLENGED),
+			partiallyChallenged: filteredByPinCode.filter(({pinCode: code, medicalCondition}) => medicalCondition === PhysicalStatus.PARTIALLY_PHYSICALLY_CHALLENGED),
+			seniorCitizens: filteredByPinCode.filter(({pinCode: code, dob}) => isSenior(dob)),
+		}
+	});
+
 	return (
 		<>
 			<Head>
@@ -97,7 +121,35 @@ function AdminPage() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 		<Box maxW="1400px" w="90%" m="0 auto">
-			<Heading>Dashboard: Total Entries - {peopleCount}. Bank account balance - {bankBalance}</Heading>
+			<Heading>Dashboard: Total Entries - {peopleCount} <br /> Bank account balance - {bankBalance}</Heading>
+			<Box my={5}>
+
+
+			{aggregatedData.map(({pinCode, name, seniorCitizens, partiallyChallenged, fullyChallenged, filteredByPinCode}) => 
+				<Accordion allowMultiple mt={0}>
+				<AccordionItem>
+				<h2>
+						<AccordionButton>
+							<Box flex="1" textAlign="left">
+								Aggregated Data for {name}, {pinCode} - {filteredByPinCode.length}
+							</Box>
+							<AccordionIcon />
+						</AccordionButton>
+					</h2>
+					<AccordionPanel pb={4}>
+						<Box>
+							<Text>Total Number of Beneficiaries : {filteredByPinCode.length}</Text>
+							<Text>Total Number of Fully Challenged Beneficiaries: {fullyChallenged.length}</Text>
+							<Text>Total Number of Partially Challenged Beneficiaries: {partiallyChallenged.length}</Text>
+							<Text>Total Number of Senior Citizens: {seniorCitizens.length}</Text>
+						</Box>
+					</AccordionPanel>	
+				</AccordionItem>
+			</Accordion>
+			)}
+			
+			</Box>
+			
 			<VStack spacing={4} mt={8}>
 				{
 					people.map((data) =>  {
