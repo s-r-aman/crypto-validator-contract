@@ -164,9 +164,14 @@ function AdminPage() {
 							<Text>Education - {data.educationQualification}</Text>	
 							<Text>Income - {data.income}</Text>	
 							<Text>Date of Birth - {format(dob, 'MMM dd,YYY')}</Text>
+							{/* @ts-expect-error */}
+							<Text>Medical Status - {PhysicalStatus[parseInt(data.medicalCondition)]}</Text>
 							<Text fontWeight="bold">{data.incentiveAmount && <>
 								<Checkbox isChecked={!!data.incentiveAmount}>Eligible for incentive: ₹ {data.incentiveAmount}</Checkbox>
-						</>}</Text>
+						</>} {' '}
+						{/* @ts-expect-error Incentive amt */}
+						{parseInt(data.incentiveAmount) ? data.medicalCondition !== '0' ? '(Physical Condition)' : '(Senior Citizen)' : '(Not Eligible)'}
+						</Text>
 							<Checkbox isChecked={data.verified}>Verified</Checkbox>
 							<Checkbox isChecked={data.benefitsTransferred}>Benefits Transferred</Checkbox>
 							<HStack>

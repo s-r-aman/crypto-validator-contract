@@ -55,7 +55,7 @@ contract Validator {
         // Adding cities
         pinCodes[560001] = CityExpense("Banglore", 560001, 10000);
         pinCodes[570004] = CityExpense("Mysore", 570004, 9000);
-        pinCodes[571441] = CityExpense("Chandagalu", 571441, 5000);
+        pinCodes[571441] = CityExpense("571441", 571441, 5000);
     }
 
 
@@ -174,6 +174,11 @@ contract Validator {
         uint averageExpense = pinCodes[pinCode].averageExpense;
         
         uint differentInExpense = averageExpense - peopleDetails[beneficiaryAddress].income;
+
+        if (beneficiary.medicalCondition == PhysicalStatus.PARTIALLY_PHYSICALLY_CHALLENGED && !isSeniorCitizen(beneficiary.dob)) {
+            return (differentInExpense * 7) / 10;
+        }
+
         return differentInExpense;
     }
 
