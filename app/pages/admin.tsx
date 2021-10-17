@@ -170,7 +170,7 @@ function AdminPage() {
 								<Checkbox isChecked={!!data.incentiveAmount}>Eligible for incentive: ₹ {data.incentiveAmount}</Checkbox>
 						</>} {' '}
 						{/* @ts-expect-error Incentive amt */}
-						{parseInt(data.incentiveAmount) ? data.medicalCondition !== '0' ? '(Physical Condition)' : '(Senior Citizen)' : '(Not Eligible)'}
+						{parseInt(data.incentiveAmount) ? isSenior(dob) ? '(Senior Citizen)' : '(Physical Condition)' : '(Not Eligible)'}
 						</Text>
 							<Checkbox isChecked={data.verified}>Verified</Checkbox>
 							<Checkbox isChecked={data.benefitsTransferred}>Benefits Transferred</Checkbox>
