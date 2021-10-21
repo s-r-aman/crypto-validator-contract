@@ -18,7 +18,7 @@ function givePhysicalStatus (a: 0 | 1 | 2 | '0' | '1' | '2') {
 	}
 }
 
-function Details () {
+function Details ({amount}: {amount: number|string}) {
 	const {person, personDetails} = useGlobalState();
 	let dob = personDetails.dob;
 	if (typeof dob === 'string') {
@@ -47,7 +47,7 @@ function Details () {
         <Box fontWeight="bold">{personDetails.nativeCountry}</Box>	
         <Checkbox size="lg" disabled isChecked={person.verified}>Verified</Checkbox>	
         <Checkbox size="lg" disabled isChecked={person.benefitsTransferred}>Benefits Transferred</Checkbox>	
-        <Checkbox size="lg" disabled isChecked={person.isEligible}>Eligibility</Checkbox>	
+        <Checkbox size="lg" disabled isChecked={person.isEligible}>Eligibility: ₹ {amount}</Checkbox>	
       </Grid>
       <Link href="/update">
         <Button width="100%" py={4} my={10} colorScheme="blue">

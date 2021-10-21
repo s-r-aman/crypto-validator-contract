@@ -10,7 +10,7 @@ import Details from './../components/Details'
 
 export default function Home() {
   const {drizzle,drizzleState, updateDetails, updatePerson, makeAdmin} = useGlobalState() 
-  const [data, setData] = useState<Partial<PersonData>>({})
+  const [data, setData] = useState<Partial<PersonData&{amount: string | number}>>({})
   const router = useRouter();
 
   const fetchData = async () => {
@@ -26,7 +26,7 @@ export default function Home() {
     } 
     updatePerson({...person, isEligible: !!isEligible})
     updateDetails(personDetails)
-    setData({...person, ...personDetails, isEligible: !!isEligible});
+    setData({...person, ...personDetails, isEligible: !!isEligible, amount: isEligible});
   }
 
 
@@ -44,7 +44,7 @@ export default function Home() {
       <Container>
         <main>
           <Heading>Crypto Validator</Heading>
-          {data?.email ? <Details /> : 
+          {data?.email ? <Details amount={data.amount} /> : 
           <Link href="/register">
             <Button width="100%" py={4} my={10} colorScheme="blue">
             Register
