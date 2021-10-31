@@ -103,7 +103,12 @@ export default function RegisterPage3() {
         </FormControl>
         <FormControl mt={5} id="pinCode" isRequired>
           <FormLabel>Pin Code:</FormLabel>
-          <Input type="number" {...register('pinCode', { required: true, maxLength: 6, minLength: 6 })} />
+          {/* <Input type="number" {...register('pinCode', { required: true, maxLength: 6, minLength: 6 })} /> */}
+          <Select {...register('pinCode', { required: true })}>
+            <option value="560001">560001 (Banglore)</option>
+            <option value="570004">570004 (Mysore)</option>
+            <option value="571441">571441 (Chamrajnagar)</option>
+          </Select>
           {errors.pinCode && <ErrorMessage>Please enter a valid pin code. (6 digits)</ErrorMessage>}
         </FormControl>
         <FormControl mt={5} id="nativeCountry" isRequired>
