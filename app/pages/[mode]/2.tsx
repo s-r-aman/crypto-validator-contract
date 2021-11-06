@@ -106,7 +106,23 @@ export default function RegisterPage3() {
           {/* <Input type="number" {...register('pinCode', { required: true, maxLength: 6, minLength: 6 })} /> */}
           <Select {...register('pinCode', { required: true })}>
             <option value="560001">560001 (Banglore)</option>
+            <option value="560002">560002 (Banglore)</option>
+            <option value="560003">560003 (Banglore)</option>
+            <option value="560004">560004 (Banglore)</option>
+            <option value="560005">560005 (Banglore)</option>
+            <option value="560006">560006 (Banglore)</option>
+            <option value="560007">560007 (Banglore)</option>
+            <option value="560008">560008 (Banglore)</option>
+            <option value="560009">560009 (Banglore)</option>
+            <option value="5600010">5600010 (Banglore)</option>
+            <option value="5600011">5600011 (Banglore)</option>
+            <option value="5600012">5600012 (Banglore)</option>
+            <option value="570001">570001 (Mysore)</option>
+            <option value="570002">570002 (Mysore)</option>
+            <option value="570003">570003 (Mysore)</option>
             <option value="570004">570004 (Mysore)</option>
+            <option value="570005">570005 (Mysore)</option>
+            <option value="570006">570006 (Mysore)</option>
             <option value="571441">571441 (Chamrajnagar)</option>
           </Select>
           {errors.pinCode && <ErrorMessage>Please enter a valid pin code. (6 digits)</ErrorMessage>}

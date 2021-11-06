@@ -54,8 +54,24 @@ contract Validator {
     constructor () public{
         // Adding cities
         pinCodes[560001] = CityExpense("Banglore", 560001, 10000);
+        pinCodes[560002] = CityExpense("Banglore", 560002, 10000);
+        pinCodes[560003] = CityExpense("Banglore", 560003, 10000);
+        pinCodes[560004] = CityExpense("Banglore", 560004, 10000);
+        pinCodes[560005] = CityExpense("Banglore", 560005, 10000);
+        pinCodes[560006] = CityExpense("Banglore", 560006, 10000);
+        pinCodes[560007] = CityExpense("Banglore", 560007, 10000);
+        pinCodes[560008] = CityExpense("Banglore", 560008, 10000);
+        pinCodes[560009] = CityExpense("Banglore", 560009, 10000);
+        pinCodes[5600010] = CityExpense("Banglore", 5600010, 10000);
+        pinCodes[5600011] = CityExpense("Banglore", 5600011, 10000);
+        pinCodes[5600012] = CityExpense("Banglore", 5600012, 10000);
+        pinCodes[570001] = CityExpense("Mysore", 570001, 9000);
+        pinCodes[570002] = CityExpense("Mysore", 570002, 9000);
+        pinCodes[570003] = CityExpense("Mysore", 570003, 9000);
         pinCodes[570004] = CityExpense("Mysore", 570004, 9000);
-        pinCodes[571441] = CityExpense("571441", 571441, 5000);
+        pinCodes[570005] = CityExpense("Mysore", 570005, 9000);
+        pinCodes[570006] = CityExpense("Mysore", 570006, 9000);
+        pinCodes[571441] = CityExpense("CHAMRAJNAGAR", 571441, 5000);
     }
 
 
